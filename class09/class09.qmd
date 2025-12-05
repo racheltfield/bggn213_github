@@ -1,0 +1,361 @@
+---
+title: "Class09 Structural Bioinformatics Pt 1"
+author: "Rachel Field (PID A69042948)"
+format: pdf
+---
+
+##The PDB database
+
+The main repository for biomolecular structural data is the Protein Data Bank (PDB): https://www.rcsb.org
+
+Let's have a quick look at the composition of this database:
+
+PDB -> Analyze -> PDB Statistics -> by Experimental Method and Molecular Type
+
+Download a CSV file from the PDB site (accessible from “Analyze” > “PDB Statistics” > “by Experimental Method and Molecular Type”. Move this CSV file into your RStudio project and use it to answer the following questions:
+
+```{r}
+stats <- read.csv("Data Export Summary.csv")
+```
+
+```{r}
+sum(stats$Other)
+```
+
+#Make the characters into numbers
+```{r}
+as.numeric(sub(",", "", stats$X.ray))
+```
+
+This is annoying let's try a different import function from the **readr** package
+```{r}
+library(readr)
+stats <- read_csv("Data Export Summary.csv")
+stats
+```
+```{r}
+n.total <- sum(stats$Total)
+n.xray <- sum(stats$'X-ray')
+round(n.xray/n.total * 100, 2)
+
+n.em <- sum(stats$'EM')
+round(n.em/n.total * 100, 2)
+```
+
+> Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+81.43% of structures in the PDB are solvedby X-ray.
+12.27% of structures in the PDB are solved by EM.
+
+```{r}
+n.protein <- stats$Total[1]
+round(n.protein/n.total * 100, 2)
+```
+
+> Q2: What proportion of structures in the PDB are protein?
+
+86.05% of structures in the PDB are protein.
+
+HOMEWORK
+
+```{r}
+library(ggplot2)
+ggplot(stats) +
+  aes(x = reorder(`Molecular Type`, - Total), y = Total) +
+  geom_col() +
+  geom_text(aes(label = Total),
+            vjust=-0.3) +
+  scale_fill_manual(values = c("X-ray", "EM", "NMR"))
+  
+```
+
+```{r}
+#library(tidyr)
+#library(dplyr)
+#stats_long <- stats %>%
+ # pivot_longer(
+    #cols = `Molecular Type`, # keep Molecular Type as is
+   # names_to = "Method", # new column for method names
+   # values_to = "Totals" # new column for counts
+#  )
+#View(stats_long)
+```
+
+
+> Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+1150
+
+##Visualizing structure data
+
+The Mol* viewer is embedded in many bioinformatic websites. The homepage is https://molstar.org
+
+I can insert any figure or image file using markdown format.
+
+![](1HSG.png)
+![](Water308.png)
+> Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+It is a PDB convention to show only the oxygen atom of water in a structure.
+
+> Q5: There is a critical “conserved” water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have
+
+Water 308.
+
+![](Spacefill_polymer_ligand.png)
+![](Space_fill_polymer_ligandBS.png)
+
+>Q6: Generate and save a figure clearly showing the two distinct chains of HIV-protease along with the ligand. You might also consider showing the catalytic residues ASP 25 in each chain and the critical water (we recommend “Ball & Stick” for these side-chains). Add this figure to your Quarto document.
+
+See above
+
+Discussion Topic: Can you think of a way in which indinavir, or even larger ligands and substrates, could enter the binding site?
+
+>Q7: [Optional] As you have hopefully observed HIV protease is a homodimer (i.e. it is composed of two identical chains). With the aid of the graphic display can you identify secondary structure elements that are likely to only form in the dimer rather than the monomer?
+
+##3. Introduction to Bio3D in R
+
+We can use the bio3d package to read and analyze biomolecular data in R:
+
+```{r}
+library(bio3d)
+hiv <- read.pdb("1hsg")
+hiv
+```
+>Q7: How many amino acid residues are there in this pdb object? 
+
+198
+
+>Q8: Name one of the two non-protein residues? 
+
+HOH (127)
+
+>Q9: How many protein chains are in this structure? 
+
+2 (A or B)
+
+
+```{r}
+head(hiv$atom)
+```
+
+Let's get the sequence
+
+```{r}
+pdbseq(hiv)
+```
+
+Let's trim to chain A and just it's sequence:
+
+```{r}
+chainA <- trim.pdb(hiv, chain = "A")
+chainA.seq <- pdbseq(chainA)
+```
+
+Let's blast.
+
+```{r blast_hiv, cache = TRUE}
+blast <- blast.pdb(chainA.seq)
+```
+
+```{r}
+head(blast$hit.tbl)
+```
+
+Plot a quick overview of the blast results
+
+```{r}
+hits <- plot(blast)
+```
+
+```{r}
+hits$pdb.id
+```
+
+
+##Prediction of functional motions
+
+We can run a Normal Mode Analysis (NMA) to predict large scale motions/flexbility/dynamics of any biomolecule that we can read into R.
+
+Let's look at ADK and chain A only!
+
+```{r}
+adk <- read.pdb("1ake")
+adk_A <- trim.pdb(adk, chain = "A")
+adk_A
+```
+
+```{r}
+m <- nma(adk_A)
+plot(m)
+```
+Let's write out a trajectory of predicted motion.
+
+```{r}
+mktrj(m, file = "adk_nma.pdb")
+```
+
+
+##Play with 3D viewing in R
+
+We can use the new **bio3dview** package, which is not yet on CRAN, to render interactive 3D views in R and HTML quarto output reports.
+
+To install from GitHub, we can use the **pak** package.
+```{r}
+#library(bio3d)
+#view.pdb(adk)
+```
+
+##4. Comparative structure analysis of Adenylate Kinase
+
+Setup
+```{r}
+# Install packages in the R console NOT your Rmd/Quarto file
+
+#install.packages("bio3d")
+#install.packages("devtools")
+#install.packages("BiocManager")
+
+#BiocManager::install("msa")
+#devtools::install_bitbucket("Grantlab/bio3d-view")
+
+#install.packages("httr")
+```
+
+>Q10. Which of the packages above is found only on BioConductor and not CRAN?
+
+msa
+
+>Q11. Which of the above packages is not found on BioConductor or CRAN?: 
+
+bio3d-view
+
+>Q12. True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket?
+
+true
+
+Search and retrieve ADK structures
+
+```{r}
+library(bio3d)
+aa <- get.seq("1ake_A")
+```
+```{r}
+aa
+```
+
+>Q13. How many amino acids are in this sequence, i.e. how long is this sequence?
+
+214 amino acids
+
+#we did blast & follow-up above already
+
+
+```{r}
+# Blast or hmmer search 
+#b <- blast.pdb(aa)
+```
+```{r}
+# Plot a summary of search results
+#hits <- plot(b)
+```
+
+```{r}
+# List out some 'top hits'
+#head(hits$pdb.id)
+```
+
+```{r}
+hits <- NULL
+hits$pdb.id <- c('1AKE_A','6S36_A','6RZE_A','3HPR_A','1E4V_A','5EJE_A','1E4Y_A','3X2S_A','6HAP_A','6HAM_A','4K46_A','3GMT_A','4PZL_A')
+```
+
+```{r}
+# Download releated PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+
+Align and superpose structures
+
+```{r}
+# Align releated PDBs
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+```
+
+```{r}
+# Vector containing PDB codes for figure axis
+ids <- basename.pdb(pdbs$id)
+
+# Draw schematic alignment
+#plot(pdbs, labels=ids)
+
+# Save the plot to a PNG file
+png("pdbs_plot.png", width=2000, height=1500, res=150)
+par(mar=c(4, 4, 2, 1))        # shrink margins
+plot(pdbs, labels=ids, cex=0.6)  # optional smaller labels
+dev.off()
+
+# Include the image in Quarto/RMarkdown
+knitr::include_graphics("pdbs_plot.png")
+```
+
+Annotate collected PDB structures
+
+```{r}
+anno <- pdb.annotate(ids)
+unique(anno$source)
+```
+
+#Principal component analysis
+
+#Workflow: get.seq() for input database identifier, blast.dpb() for PDB search or get.pdb() for homologous structure set, pdbaln() for alignment, pca() for PCA
+
+Starting with a sequence or structure ID (accession number), let's rum a complete anlysis pipeline.
+
+```{r}
+id<-"1ake_A"
+library(bio3d)
+aa <- get.seq(id)
+```
+```{r cache=TRUE}
+blast <- blast.pdb(aa)
+hits<-plot(blast)
+```
+
+```{r}
+hits$pdb.id
+```
+
+```{r}
+# Download releated PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+
+```{r}
+# Align releated PDBs
+#pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+```
+
+```{r}
+pdbs <- pdbaln(files, fit = TRUE, exefile="msa")
+
+```
+
+```{r}
+pca.xray <- pca(pdbs)
+plot(pca.xray)
+```
+
+```{r}
+mktrj(pca.xray, file = "pca_results.pdb")
+```
+
+```{r}
+library(bio3dview)
+view.pca(pca.xray)
+```
+
+
+
+
+

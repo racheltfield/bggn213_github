@@ -1,0 +1,335 @@
+---
+title: "class 07 machine learning 1"
+author: "Rachel Field (PID: A69042948"
+format: pdf
+---
+
+Today we will begin our exploration of some "classical" machine learning approaches. We will start with clustering.
+
+Let's first make up some data to cluster where we know what the answer should be.
+
+```{r}
+hist(rnorm(1000))
+
+```
+
+```{r}
+rnorm(30, mean=-3)
+rnorm(30, mean=3)
+```
+#makes normal distribution centered around a value
+#concatenate into a vector
+#print out side by side with cbind
+
+```{r}
+x<-c(rnorm(30, mean=-3), rnorm(30, mean=3))
+y<- rev(x)
+
+x<- cbind(x,y)
+head(x)
+```
+A wee peak at x with `plot()`
+```{r}
+plot(x)
+```
+Then main function in "base" R for K-means clustering called `kmeans()`
+```{r}
+k <- kmeans(x, centers = 2)
+k
+```
+>Q. How big are the clusters? (i.e. their size?)
+
+```{r}
+k$size
+```
+>Q. What clusters do my data points reside in?
+
+```{r}
+k$cluster
+```
+
+>Q. Make a plot of our daa colored by clustered assignment. i.e. Make a result figure
+
+```{r}
+plot(x, col = c("red", "blue"))
+```
+```{r}
+plot(x, col = k$cluster)
+points(k$centers, col = "blue", pch = 15)
+```
+>Q. Cluster with k-means into 4 clusters and plot your results as above.
+
+```{r}
+k2 <- kmeans(x, centers = 4)
+k2
+
+plot(x, col = k2$cluster)
+points(k2$centers, col = "blue", pch = 15)
+```
+>Q. Run kmeans with centers (i.e. values of k) equal to 1 to 6
+
+```{r}
+k$tot.withinss
+```
+
+Brute force
+```{r}
+k.1<-kmeans(x, centers=1)$tot.withinss
+k.2<-kmeans(x, centers=2)$tot.withinss
+k.3<-kmeans(x, centers=3)$tot.withinss
+k.4<-kmeans(x, centers=4)$tot.withinss
+k.5<-kmeans(x, centers=5)$tot.withinss
+k.6<-kmeans(x, centers=6)$tot.withinss
+
+ans <- c(k.1,k.2,k.3,k.4,k.5,k.6)
+```
+
+Or a for loop
+#make something called ans and it's empty so I can put stuff there
+#for i assuming the values of 1:6, assuming the value of 1 first
+```{r}
+ans <- NULL
+for(i in 1:6){
+  ans <- c(ans, kmeans(x, centers= i)$tot.withinss)
+}
+
+ans
+```
+
+Make a "scree-plot"
+
+```{r}
+plot(ans, typ = "b")
+```
+#values decrease because as you add more clusters, the size of the clusters decreases. At value of 2, you get the. most bang for your book
+
+##Hierarchical Clustering
+The main function in "base" R for this is called `hclust()`
+
+#kmeans works with euclidean distance, this can work with other things like sequence similarity, structure similarity, etc
+```{r}
+d <- dist(x)
+hc <- hclust(d)
+hc
+```
+
+```{r}
+plot(hc)
+```
+#low numbers on the left of the plot, high numbers on the right
+#tree shaped cluster used to interpret hierarchical clustering models
+
+```{r}
+plot(hc)
+abline(h=7, col="red")
+```
+
+To obtain clusters from our `hclust` result object "hc" we "**cut** the tree to yield different sub branches, for this we use the `cutree()` function
+
+```{r}
+grps <- cutree(hc, h=7)
+grps
+```
+
+```{r}
+plot(x, col = grps)
+```
+```{r}
+library(pheatmap)
+pheatmap(x)
+```
+##Principal Component Analysis (PCA)
+
+PCA projects the features onto the principal components. The motivation is to reduce the features dimensionality while only losing a small amount of information.
+
+The first principal component (PC) follows a best fit through the data points.
+
+Principal components are new low dimesional axis (or surfaces) closest to the observations. These are better than the x and y axis because they describe more of the variance. The data have maximum variance along PC1 (then PC2 etc) which makes the first few PCs useful for visualizing our data and as a basis for further analysis
+
+```{r}
+url <- "https://tinyurl.com/UK-foods"
+x <- read.csv(url)
+```
+>Q1. How many rows and columns are in your new data frame named x? What R functions could you use to answer this questions?
+
+17 rows, 5 columns. dim(x)
+
+```{r}
+dim(x)
+```
+
+```{r}
+head(x)
+tail(x)
+```
+```{r}
+rownames(x) <- x[,1]
+x <- x[,-1]
+head(x)
+```
+```{r}
+dim(x)
+```
+
+```{r}
+x <- read.csv(url, row.names=1)
+head(x)
+```
+
+>Q2. Which approach to solving the ‘row-names problem’ mentioned above do you prefer and why? Is one approach more robust than another under certain circumstances?
+
+I prefer the second approach because when I run the first approach multiple times, it erases England and then other columns.
+
+#Spotting major differences and trends
+
+```{r}
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+```
+>Q3.Changing what optional argument in the above barplot() function results in the following plot?
+
+beside=F
+
+```{r}
+barplot(as.matrix(x), beside=F, col=rainbow(nrow(x)))
+```
+#this is a bad plot, for ex the blue parts are not on a common axis
+
+##Side-note: Using ggplot and the need for “tidy” data
+
+Using the ggplot2 package for these relatively simple figures is somewhat more convoluted than using “base” R. This is due to the ggplot requirement for so-called “long” data rather than the conventional “wide” data format that we currently have. We will talk more about “long” format data a little later in the course when we introduce the dplyr package.
+
+Data organized with one row per Food (17 observation) and multiple columns for Country (4 different measurements across a row):
+
+To convert this to “long” format we want one row per measurement - maximizes rows (17x4=68), minimizes columns (with a singe Consumption measurement value per Country). We will do tidying with the pivot_longer() function from the tidyr package:
+
+```{r}
+library(tidyr)
+
+# Convert data to long format for ggplot with `pivot_longer()`
+x_long <- x |> 
+          tibble::rownames_to_column("Food") |> 
+          pivot_longer(cols = -Food, 
+                       names_to = "Country", 
+                       values_to = "Consumption")
+
+dim(x_long)
+```
+
+```{r}
+head(x_long)
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(x_long) +
+  aes(x = Country, y = Consumption, fill = Food) +
+  geom_col(position = "dodge") +
+  theme_bw()
+```
+
+>Q4: Changing what optional argument in the above ggplot() code results in a stacked barplot figure?
+
+beside=F
+
+##Pairs plots and heatmaps
+Pairs plots, also known as scatterplot matrices, are collections of bivariate scatter plots used to visualize relationships between multiple variables simultaneously. For small datasets, pairs plots are a particularly valuable exploratory analysis technique.
+
+>Q5: We can use the pairs() function to generate all pairwise plots for our countries. Can you make sense of the following code and resulting figure? What does it mean if a given point lies on the diagonal for a given plot?
+
+It is an outlier point, that has a higher value in one group (here, country) than the other.
+
+```{r}
+pairs(x, col=rainbow(nrow(x)), pch=16)
+```
+
+#we can see outliers (think, we could do this for gene expression)
+
+```{r}
+library(pheatmap)
+
+pheatmap( as.matrix(x) )
+```
+
+In this heatmap, darker colors represent higher values (consumption in grams), and the dendrogram (tree diagram) on the left shows how foods cluster together, while the top dendrogram shows how countries cluster together.
+
+>Q6. Based on the pairs and heatmap figures, which countries cluster together and what does this suggest about their food consumption patterns? Can you easily tell what the main differences between N. Ireland and the other countries of the UK in terms of this data-set?
+
+It seems that England, and Wales are more similar, but it's hard to tell what is going on in the dataset.
+
+It's not easy to notice patterns in these previous methods.
+
+
+#PCA to the rescue
+
+Helpful notes from lab sheet:
+Traditionally, we would use a series of pairwise plots (i.e. bivariate scatter plots) and analyse these to try and determine any relationships between variables, however the number of such plots required for such a task is clearly too large even for this small dataset. Therefore, for large data sets, this is not feasible or fun.
+
+PCA generalizes this idea and allows us to perform such an analysis simultaneously, for many variables. In our example here, we have 17 dimensional data for 4 countries. We can thus ‘imagine’ plotting the 4 coordinates representing the 4 countries in 17 dimensional space. If there is any correlation between the observations (the countries), this will be observed in the 17 dimensional space by the correlated points being clustered close together, though of course since we cannot visualize such a space, we are not able to see such clustering directly (see the lecture slides for a clear description and example of this).
+
+To perform PCA in R there are actually lots of functions to chose from and many packages offer slick PCA implementations and useful graphing approaches. However here we will stick to the base R prcomp() function.
+
+As we noted in the lecture portion of class, prcomp() expects the observations to be rows and the variables to be columns therefore we need to first transpose our data.frame matrix with the t() transpose function.
+
+...
+The main function in "base" R for PCA is called `prcomp()`
+
+As we want to do PCA on the food data for the different countries we will want the foods in the columns.
+```{r}
+pca <- prcomp( t(x) )
+summary(pca)
+```
+PC1 captures 67% of the variance.
+
+Our result object is called `pca` and it has a `$x` component that we will look at first. (It is a list object so we need $ to get components of this)
+
+```{r}
+pca$x
+```
+>Q7. Complete the code below to generate a plot of PC1 vs PC2. The second line adds text labels over the data points.
+
+Score plot:
+
+```{r}
+ggplot(pca$x, aes(PC1, PC2, label = rownames(pca$x))) +
+  geom_point() +
+  geom_text()
+```
+>Q8. Customize your plot so that the colors of the country names match the colors in our UK and Ireland map and table at start of this document.
+
+```{r}
+library(ggplot2)
+
+cols<-c("orange", "red", "blue", "darkgreen")
+
+ggplot(pca$x, aes(PC1, PC2, label = rownames(pca$x))) +
+  geom_point(col=cols) +
+  geom_text()
+```
+
+Another major result out of PCA is the so-called "variable loadings" or how `$rotation` that tells us how the original variables (foods) contribute to PCs (i.e. our the new axis)
+
+```{r}
+pca$rotation
+```
+
+```{r}
+ggplot(pca$rotation) +
+  aes(PC1, rownames(pca$rotation)) +
+  geom_col()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

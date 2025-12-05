@@ -1,0 +1,224 @@
+---
+title: "Class 5 Data Vis with GGPLOT"
+author: "Rachel Field (PID A69042948)"
+format: pdf
+---
+
+Today we are playing with plotting and graphics in R. 
+
+There are a lot of ways to make cool figures in R.
+
+There is "base" R graphics (`plot()`, `hist()`. `boxplot()`, etc.)
+
+There is also add-on packages like **ggplot**
+
+```{r}
+head(cars, 3)
+```
+Let's plot this with "base" R.
+
+```{r}
+plot(cars)
+```
+```{r}
+head(mtcars)
+```
+Let's plot `mpg` vs `disp`
+
+```{r}
+plot(mtcars$mpg, mtcars$disp, pch=10)
+```
+```{r}
+hist(mtcars$mpg)
+```
+
+
+##GGPLOT
+
+The main function of the ggplot2 package is **ggplot()**. First I need to install the **ggplot2** package. I can install any package with the function `install.packages()`
+
+> **N.B.** I never want tp run `install.packages()` in my quarto source document!!!
+
+```{r}
+library(ggplot2)
+ggplot(cars) + aes(x=speed, y=dist) + geom_point()
+```
+
+```{r}
+ggplot(cars) + aes(x=speed) + geom_histogram()
+```
+Every ggplot needs at least 3 things:
+- The **data** (given with `ggplot(cars)`)
+- The **aesthetic** mapping (given with `aes()`)
+- The **geom** (given by `geom_point()`)
+
+>For simple canned graphs "base" R is nearly always faster
+
+###Adding more layers
+
+Let's add a line and a title, subtitle, and caption as well as custom axis labels.
+
+```{r}
+ggplot(cars) +
+  aes(x=speed, y = dist) +
+  geom_point() +
+  geom_line()
+```
+
+
+```{r}
+ggplot(cars) +
+  aes(x=speed, y = dist) +
+  geom_point() +
+  geom_smooth(method="lm", se=FALSE) +
+  labs (title = "Speed versus Distance", subtitle = "Cars", x= "Speed (MPH)", y = "Distance (Feet)", caption = "caption!") +
+  theme_bw()
+```
+##Plot some expression data
+
+Read data file from onlone url
+
+```{r}
+url <- "https://bioboot.github.io/bimm143_S20/class-material/up_down_expression.txt"
+genes <- read.delim(url)
+head(genes)
+```
+>Q1: How many genes are in this wee dataset?
+
+There are `r nrow(genes)` in this dataset.
+
+```{r}
+nrow(genes)
+colnames(genes)
+ncol(genes)
+```
+
+
+>Q2: How many upregulated genes are there?
+
+```{r}
+sum(genes$State=="up")
+table(genes$State)
+round( table(genes$State)/nrow(genes) * 100, 2 )
+```
+
+```{r}
+ggplot(genes) + 
+  aes(x=Condition1, y = Condition2, color=State) +
+  geom_point()
+```
+```{r}
+p<-ggplot(genes) + 
+  aes(x=Condition1, y = Condition2, color=State) +
+  geom_point() +
+  scale_color_manual(values = c("purple", "orange", "blue"))
+
+p+labs(title="look at me")
+```
+
+```{r}
+ggplot(genes) +
+  aes(x=Condition1, y=Condition2, col=State, label=Gene)+
+  geom_point()+
+  scale_color_manual(values =c("blue", "gray", "red"))+
+  geom_text()
+```
+
+```{r}
+library(ggrepel)
+ggplot(genes) +
+  aes(x=Condition1, y=Condition2, col=State, label=Gene)+
+  geom_point()+
+  scale_color_manual(values =c("blue", "gray", "red"))+
+  geom_text_repel(max.overlaps = 60) +
+  theme_bw()
+```
+
+##Going Further
+
+Playing with some different layers and the gapminder dataset.
+
+```{r}
+url <- "https://raw.githubusercontent.com/jennybc/gapminder/master/inst/extdata/gapminder.tsv"
+
+gapminder <- read.delim(url)
+```
+
+```{r}
+head(gapminder)
+```
+
+
+```{r}
+tail(gapminder, 6)
+```
+
+A first plot
+
+```{r}
+ggplot(gapminder)+
+  aes(x=gdpPercap, y= lifeExp, color=continent) +
+  geom_point() +
+  facet_wrap(~continent)
+```
+
+##Optional plot, whatever we want
+```{r}
+ggplot(gapminder)+
+  aes(x=year, y=lifeExp, color=continent) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  facet_wrap(~continent)
+```
+
+##Other plot from lab sheet
+
+```{r}
+library(dplyr)
+
+gapminder_2007 <- gapminder %>% filter(year==2007)
+
+ggplot(gapminder_2007) +
+  aes(x=gdpPercap, y=lifeExp, color=continent, size=pop) +
+  geom_point(alpha=0.5)
+```
+
+```{r}
+ggplot(gapminder_2007) + 
+  aes(x = gdpPercap, y = lifeExp, color = pop) +
+  geom_point(alpha=0.8)
+```
+
+```{r}
+ggplot(gapminder_2007) + 
+  aes(x = gdpPercap, y = lifeExp, size = pop) +
+  geom_point(alpha=0.5)
+```
+
+```{r}
+ggplot(gapminder_2007) + 
+  geom_point(aes(x = gdpPercap, y = lifeExp,
+                 size = pop), alpha=0.5) + 
+  scale_size_area(max_size = 10)
+```
+
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957)
+
+ggplot(gapminder_1957) + 
+  aes(x = gdpPercap, y = lifeExp, color=continent,
+                 size = pop) +
+  geom_point(alpha=0.7) + 
+  scale_size_area(max_size = 10) 
+```
+
+```{r}
+gapminder_1957 <- gapminder %>% filter(year==1957 | year==2007)
+
+ggplot(gapminder_1957) + 
+  geom_point(aes(x = gdpPercap, y = lifeExp, color=continent,
+                 size = pop), alpha=0.7) + 
+  scale_size_area(max_size = 10) +
+  facet_wrap(~year)
+```
+

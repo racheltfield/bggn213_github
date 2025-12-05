@@ -1,0 +1,141 @@
+---
+title: "class06"
+author: "Rachel Field"
+format: pdf
+toc: true
+---
+
+#functions have names,input arguments, and body
+```{r}
+add <- function (x, y=1) {
+x+y
+}
+```
+
+#call the function
+```{r}
+add(10, 100)
+```
+
+#second practice function
+```{r}
+sample (c("A", "C", "G","T"), size=5, replace = TRUE)
+```
+
+
+##Turn this into my first function
+```{r}
+generate_data<- function(size=50) {
+  v<-sample(c("A","C","G","T"), size=size, replace=TRUE)
+paste(v, collapse="")
+}
+```
+
+##Test it
+```{r}
+generate_data(60)
+```
+```{r}
+fasta <- FALSE
+if(fasta) {
+  cat("HELLO You")
+} else{
+  cat("No you dont!")
+}
+
+```
+
+##Add the ability to return a multi-element vector or a single element fasta like vector.
+
+```{r}
+generate_fasta<- function(size=50, fasta=TRUE) {
+  v<-sample(c("A","C","G","T"), size=size, replace=TRUE)
+paste(v, collapse="")
+
+if(fasta){
+  cat("HELLO You")
+} else {
+  cat("No you dont!")
+}
+}
+
+```
+```{r}
+generate_fasta(10, fasta=TRUE)
+```
+
+```{r}
+generate_fasta(10, fasta=FALSE)
+```
+
+```{r}
+generate_fasta<- function(size=50, fasta=TRUE) {
+  v<-sample(c("A","C","G","T"), size=size, replace=TRUE)
+  s <- paste(v, collapse="")
+
+if(fasta){
+  return(s)
+} else {
+  return(v)
+}
+}
+
+```
+
+```{r}
+generate_fasta(10, fasta=TRUE)
+```
+
+```{r}
+generate_fasta(10, fasta=FALSE)
+```
+#notetoself: sample() is a function that randomly selects elements from a vector. c("A", "C", "G", "T") is the vector from which we're sampling — representing the four DNA bases. size=size means you're sampling size number of bases (default is 50). replace=TRUE means that each selection is with replacement, so the same base can appear multiple times.
+#paste() combines elements of a character vector into a single string, collapse="" tells it not to add any separator — so the bases are just stuck together.
+
+
+```{r}
+generate_protein<-function(size=50, fasta=TRUE) {
+  aa<-c("A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V")
+  v<- sample(aa, size=size, replace=TRUE)
+  s<-paste(v, collapse="")
+}
+```
+
+##Use our new `generate_protein()` function to make random sequences of length 6 to 12 (i.e. one length 6, one length 7, one length 8, etc).
+
+One way to do this is brute force.
+
+```{r}
+generate_protein(6)
+```
+
+Or use a for loop
+
+```{r}
+lengths<-6:12
+for(i in lengths) {
+  cat(i)
+  cat("\n")
+}
+```
+```{r}
+lengths<-6:12
+for(i in lengths) {
+  cat(">", i, sep= "")
+  aa<-generate_protein(i)
+  cat(aa)
+  cat("\n")
+}
+```
+##sapply(vector or list, function)
+```{r}
+generate_protein<-function(size=50, fasta=TRUE) {
+  aa<-c("A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V")
+  v<- sample(aa, size=size, replace=TRUE)
+  s<-paste(v, collapse="")
+}
+sapply(6:12, generate_protein)
+```
+
+
+

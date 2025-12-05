@@ -1,0 +1,46 @@
+CLUSTAL multiple sequence alignment by MUSCLE (3.8)
+
+
+NM_000518.5      ACATTTGCTTCTGACACAACTGTGTTCACTAGCAACCTCAAACAGACACCATGGTGCATC
+ex1              --------------------------------------------------ATGGTGCATC
+                                                                   **********
+
+NM_000518.5      TGACTCCTGAGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAGGTGAACGTGGATGAAG
+ex1              TGACTCCTGTGGAGAAGTCTGCCGTTACTGCCCTGTGGGGCAAGGTGAACGTGGATGAAG
+                 ********* **************************************************
+
+NM_000518.5      TTGGTGGTGAGGCCCTGGGCAGGCTGCTGGTGGTCTACCCTTGGACCCAGAGGTTCTTTG
+ex1              TTGGTGGTGAGGCCCTGGGCAGGCTGCTGGTGGTCTACCCTTGGACCCAGAGGTTCTTTG
+                 ************************************************************
+
+NM_000518.5      AGTCCTTTGGGGATCTGTCCACTCCTGATGCTGTTATGGGCAACCCTAAGGTGAAGGCTC
+ex1              AGTCCTTTGGGGATCTGTCCACTCCTGATGCAGTTATGGGCAACCCTAAGGTGAAGGCTC
+                 ******************************* ****************************
+
+NM_000518.5      ATGGCAAGAAAGTGCTCGGTGCCTTTAGTGATGGCCTGGCTCACCTGGACAACCTCAAGG
+ex1              ATGGCAAGAAAGTGCTCGGTGCCTTTAGTGATGGCCTGGCTCACCTGGACAACCTCAAGG
+                 ************************************************************
+
+NM_000518.5      GCACCTTTGCCACACTGAGTGAGCTGCACTGTGACAAGCTGCACGTGGATCCTGAGAACT
+ex1              GCACCTTTGCCACACTGAGTGAGCTGCACTGTGACAAGCTGCACGTGGATCCTGAGAACT
+                 ************************************************************
+
+NM_000518.5      TCAGGCTCCTGGGCAACGTGCTGGTCTGTGTGCTGGCCCATCACTTTGGCAAAGAATTCA
+ex1              TCAGGCTCCTGGGCAACGTGCTGGTCTGTGTGCTGGCCCATCACTTTGGCAAAGAATTCA
+                 ************************************************************
+
+NM_000518.5      CCCCACCAGTGCAGGCTGCCTATCAGAAAGTGGTGGCTGGTGTGGCTAATGCCCTGGCCC
+ex1              CCCCACCAGTGCAGGCTGCCTATCAGAAAGTGGTGGCTGGTGTGGCTAATGCCCTGGCCC
+                 ************************************************************
+
+NM_000518.5      ACAAGTATCACTAAGCTCGCTTTCTTGCTGTCCAATTTCTATTAAAGGTTCCTTTGTTCC
+ex1              ACAAGTATCACTAAGCTCGCTTTCTTGCTGTCCAATTT----------------------
+                 **************************************                      
+
+NM_000518.5      CTAAGTCCAACTACTAAACTGGGGGATATTATGAAGGGCCTTGAGCATCTGGATTCTGCC
+ex1              ------------------------------------------------------------
+                                                                             
+
+NM_000518.5      TAATAAAAAACATTTATTTTCATTGCAA
+ex1              ----------------------------
+                                             
