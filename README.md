@@ -7,6 +7,7 @@ Class work for bioinformatics at uc san diego [BGGN213 at UC San Diego](https://
 - Class 06: [Writing R functions]()
 - Class 07: [Machine learning for Bioinformatics 1]()
 - Class 08: [Unsupervised learning mini-project]()
+- Class 12: [Transcriptomics](class12/class12.md)
 
 
 
